@@ -1,40 +1,100 @@
-import { Inject, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { User } from './entities/user.entity';
 import { Repository } from 'typeorm';
 import { Response } from 'express';
+import { InjectRepository } from '@nestjs/typeorm';
+import { hash } from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
-  // constructor(
-  //   @Inject('User')
-  //   private userEntity: Repository<User>,
-  // ) {}
+  constructor(
+    @InjectRepository(User)
+    private userEntity: Repository<User>,
+  ) {}
 
-  async create(res: Response, createUserDto: CreateUserDto) {
-    // console.log({ createUserDto });
-    // this.userEntity.create({
-    //   email: createUserDto.email,
-    //   fullname: createUserDto.fullname,
-    // });
+  async create(res: Response, createUserDto: CreateUserDto): Promise<any> {
+    const { email, password, fullname } = createUserDto;
 
-    return res.status(201).send({ message: 'User created' });
+    if (!email || !password || !fullname)
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'Invalid inputs' });
+
+    const user = await this.userEntity.findOne({ where: { email } });
+
+    if (user)
+      return res
+        .status(HttpStatus.BAD_REQUEST)
+        .send({ message: 'User already exists' });
+
+    const hashedPassword = await hash(password, 12);
+
+    const result = await this.userEntity.save({
+      email: email,
+      password: hashedPassword,
+      fullname: fullname,
+    });
+
+    if (!result)
+      return res
+        .status(HttpStatus.INTERNAL_SERVER_ERROR)
+        .send({ message: 'Some problem while registering user.' });
+
+    return res.status(HttpStatus.CREATED).send({ message: 'User created' });
   }
 
-  findAll() {
-    return `This action returns all users`;
+  async findAll(res: Response): Promise<any> {
+    const users = await this.userEntity.find();
+
+    return res.status(200).send({
+      message: 'All users list',
+      users,
+    });
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
+  async findOne(res: Response, id: string): Promise<any> {
+    const user = await this.userEntity.findOne({ where: { id } });
+
+    if (!user)
+      return res.status(HttpStatus.NOT_FOUND).send({
+        message: 'User not found',
+      });
+
+    return res.status(200).send({
+      message: 'User with given ID',
+      user,
+    });
   }
 
-  update(id: number, updateUserDto: UpdateUserDto) {
-    return `This action updates a #${id} user`;
+  async update(
+    res: Response,
+    id: string,
+    updateUserDto: UpdateUserDto,
+  ): Promise<any> {
+    const user = await this.userEntity.update({ id }, updateUserDto);
+
+    if (!user)
+      return res.status(HttpStatus.NOT_FOUND).send({
+        message: 'User not found',
+      });
+
+    return res.status(200).send({
+      message: 'User updated',
+    });
   }
 
-  remove(id: number) {
-    return `This action removes a #${id} user`;
+  async remove(res: Response, id: string): Promise<any> {
+    const user = await this.userEntity.delete({ id });
+
+    if (!user)
+      return res.status(HttpStatus.NOT_FOUND).send({
+        message: 'User not found',
+      });
+
+    return res.status(200).send({
+      message: 'User Deleted',
+    });
   }
 }
