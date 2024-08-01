@@ -1,11 +1,9 @@
+import { dbConfig } from 'src/utils/db.config';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 export const dataSourceOptions: DataSourceOptions = {
   type: 'postgres',
-  host: 'localhost',
-  username: 'postgres',
-  password: 'super',
-  database: 'nest_orm',
+  ...dbConfig,
   entities: ['dist/**/*.entity{.ts,.js}'],
   migrations: ['dist/db/migrations/*{.ts,.js}'],
 };

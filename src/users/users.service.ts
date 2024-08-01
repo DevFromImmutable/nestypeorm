@@ -73,7 +73,18 @@ export class UsersService {
     id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<any> {
-    const user = await this.userEntity.update({ id }, updateUserDto);
+    const { password, fullname } = updateUserDto;
+    let user: any;
+
+    if (password) {
+      const hashedPassword = await hash(password, 12);
+      user = await this.userEntity.update(
+        { id },
+        { password: hashedPassword, fullname },
+      );
+    } else {
+      user = await this.userEntity.update({ id }, { fullname });
+    }
 
     if (!user)
       return res.status(HttpStatus.NOT_FOUND).send({
@@ -81,7 +92,7 @@ export class UsersService {
       });
 
     return res.status(200).send({
-      message: 'User updated',
+      message: 'User info updated',
     });
   }
 

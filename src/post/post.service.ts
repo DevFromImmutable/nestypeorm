@@ -69,7 +69,19 @@ export class PostService {
     id: string,
     updatePostDto: UpdatePostDto,
   ): Promise<any> {
-    const post = await this.postEntity.update({ id }, updatePostDto);
+    const { title, content, tags } = updatePostDto;
+    let slug: string;
+    let post: any;
+
+    if (title && title !== undefined) {
+      slug = slugify(title, { trim: true, lower: true, replacement: '-' });
+      post = await this.postEntity.update(
+        { id },
+        { title, slug, content, tags },
+      );
+    } else {
+      post = await this.postEntity.update({ id }, { content, tags });
+    }
 
     if (!post)
       return res.status(HttpStatus.NOT_FOUND).send({
