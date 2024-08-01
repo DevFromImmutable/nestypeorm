@@ -4,7 +4,7 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Post } from './entities/post.entity';
-import { Response } from 'express';
+import { Request, Response } from 'express';
 import slugify from 'slugify';
 
 @Injectable()
@@ -14,9 +14,15 @@ export class PostService {
     private postEntity: Repository<Post>,
   ) {}
 
-  async create(res: Response, createPostDto: CreatePostDto): Promise<any> {
-    const { title, tags, content, userId } = createPostDto;
-    if (!title || !content || !userId) {
+  async create(
+    req: Request,
+    res: Response,
+    createPostDto: CreatePostDto,
+  ): Promise<any> {
+    console.log(req);
+
+    const { title, tags, content } = createPostDto;
+    if (!title || !content) {
       return res
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: 'Invalid Inputs' });
@@ -30,13 +36,12 @@ export class PostService {
 
     const slug = slugify(title, { trim: true, lower: true, replacement: '-' });
 
-    await this.postEntity.save({
-      title,
-      content,
-      tags,
-      slug,
-      userId,
-    });
+    // await this.postEntity.save({
+    //   title,
+    //   content,
+    //   tags,
+    //   slug,
+    // });
 
     return res.status(HttpStatus.CREATED).send({ message: 'Post added' });
   }

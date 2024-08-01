@@ -1,4 +1,4 @@
-import { dbConfig } from 'src/utils/db.config';
+import { dbConfig } from 'src/utils';
 import { DataSource, DataSourceOptions } from 'typeorm';
 
 export const dataSourceOptions: DataSourceOptions = {
