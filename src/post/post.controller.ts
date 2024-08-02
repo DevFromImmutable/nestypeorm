@@ -8,20 +8,20 @@ import {
   Delete,
   Res,
   Req,
+  UseGuards,
 } from '@nestjs/common';
 import { PostService } from './post.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
 import { Request, Response } from 'express';
 import {
-  ApiAcceptedResponse,
   ApiBearerAuth,
-  ApiBody,
   ApiHeader,
   ApiOkResponse,
   ApiSecurity,
   ApiTags,
 } from '@nestjs/swagger';
+import { AuthGuard } from 'src/auth/auth.guard';
 
 @ApiTags('POST')
 @ApiBearerAuth()
@@ -36,6 +36,7 @@ import {
 export class PostController {
   constructor(private readonly postService: PostService) {}
 
+  @UseGuards(AuthGuard)
   @Post()
   @ApiOkResponse({ description: 'Post created' })
   create(
@@ -46,18 +47,21 @@ export class PostController {
     return this.postService.create(req, res, createPostDto);
   }
 
+  @UseGuards(AuthGuard)
   @Get()
   @ApiOkResponse({ description: 'All Post List' })
   findAll(@Res() res: Response) {
     return this.postService.findAll(res);
   }
 
+  @UseGuards(AuthGuard)
   @Get(':id')
   @ApiOkResponse({ description: 'Post with given ID' })
   findOne(@Res() res: Response, @Param('id') id: string) {
     return this.postService.findOne(res, id);
   }
 
+  @UseGuards(AuthGuard)
   @Patch(':id')
   @ApiOkResponse({ description: 'Your Post Updated' })
   update(
@@ -68,6 +72,7 @@ export class PostController {
     return this.postService.update(res, id, updatePostDto);
   }
 
+  @UseGuards(AuthGuard)
   @Delete(':id')
   @ApiOkResponse({ description: 'Your Post deleted' })
   remove(@Res() res: Response, @Param('id') id: string) {

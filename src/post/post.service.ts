@@ -19,7 +19,12 @@ export class PostService {
     res: Response,
     createPostDto: CreatePostDto,
   ): Promise<any> {
-    console.log(req);
+    const { user }: any = req;
+    const { userId }: any = user;
+
+    if (!user || !userId) {
+      return res.status(401).send({ message: 'Unauthorize Request.' });
+    }
 
     const { title, tags, content } = createPostDto;
     if (!title || !content) {
@@ -36,12 +41,13 @@ export class PostService {
 
     const slug = slugify(title, { trim: true, lower: true, replacement: '-' });
 
-    // await this.postEntity.save({
-    //   title,
-    //   content,
-    //   tags,
-    //   slug,
-    // });
+    await this.postEntity.save({
+      title,
+      content,
+      tags,
+      slug,
+      userId,
+    });
 
     return res.status(HttpStatus.CREATED).send({ message: 'Post added' });
   }

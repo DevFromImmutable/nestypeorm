@@ -31,7 +31,7 @@ export class AuthService {
     if (!isPasswordCorrect)
       return res.status(400).send({ message: 'Email of password invalid' });
 
-    const payload = { sub: user.id, username: user.email };
+    const payload = { userId: user.id, email: user.email };
     const token = await this.jwtService.signAsync(payload);
 
     return res.status(200).send({ message: 'User logged in.', token });
