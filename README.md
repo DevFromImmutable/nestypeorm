@@ -1,8 +1,9 @@
 <h1 align="center">TYPEORM AND SWAGGER</h1>
 <div align="center">
 <img width="150px" src="./public/images/Nest.js.png" />
-<img width="150px" src="./public/images/Swagger.png" />
 <img width="150px" src="./public/images/PostgresSQL.png" />
+<img width="150px" src="./public/images/logo_big.png" />
+<img width="150px" src="./public/images/Swagger.png" />
 </div>
 
 <br />
