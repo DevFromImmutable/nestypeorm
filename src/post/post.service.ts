@@ -23,7 +23,9 @@ export class PostService {
     const { userId }: any = user;
 
     if (!user || !userId) {
-      return res.status(401).send({ message: 'Unauthorize Request.' });
+      return res
+        .status(HttpStatus.UNAUTHORIZED)
+        .send({ message: 'Unauthorize Request.' });
     }
 
     const { title, tags, content } = createPostDto;
@@ -76,41 +78,52 @@ export class PostService {
   }
 
   async update(
+    req: Request,
     res: Response,
     id: string,
     updatePostDto: UpdatePostDto,
   ): Promise<any> {
-    const { title, content, tags } = updatePostDto;
-    let slug: string;
-    let post: any;
-
-    if (title && title !== undefined) {
-      slug = slugify(title, { trim: true, lower: true, replacement: '-' });
-      post = await this.postEntity.update(
-        { id },
-        { title, slug, content, tags },
-      );
-    } else {
-      post = await this.postEntity.update({ id }, { content, tags });
-    }
+    const { user }: any = req;
+    const { userId }: any = user;
+    const post = await this.postEntity.findOne({ where: { id, userId } });
 
     if (!post)
       return res.status(HttpStatus.NOT_FOUND).send({
         message: 'Post not found',
       });
+
+    const { title, content, tags } = updatePostDto;
+
+    if (title && title !== undefined) {
+      const slug = slugify(title, {
+        trim: true,
+        lower: true,
+        replacement: '-',
+      });
+      await this.postEntity.update(
+        { id: post.id },
+        { title, slug, content, tags },
+      );
+    } else {
+      await this.postEntity.update({ id: post.id }, { content, tags });
+    }
 
     return res.status(200).send({
       message: 'Post updated',
     });
   }
 
-  async remove(res: Response, id: string): Promise<any> {
-    const post = await this.postEntity.delete({ id });
+  async remove(req: Request, res: Response, id: string): Promise<any> {
+    const { user }: any = req;
+    const { userId }: any = user;
+    const post = await this.postEntity.findOne({ where: { id, userId } });
 
     if (!post)
       return res.status(HttpStatus.NOT_FOUND).send({
         message: 'Post not found',
       });
+
+    await this.postEntity.delete({ id: post.id });
 
     return res.status(200).send({
       message: 'Post Deleted',

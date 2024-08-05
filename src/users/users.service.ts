@@ -45,7 +45,19 @@ export class UsersService {
     return res.status(HttpStatus.CREATED).send({ message: 'User created' });
   }
 
-  async findAll(res: Response): Promise<any> {
+  async findAll(req: Request, res: Response): Promise<any> {
+    const { user }: any = req;
+    const { userId }: any = user;
+    const currentUser = await this.userEntity.findOne({
+      where: { id: userId },
+    });
+
+    if (currentUser.role !== 'ADMIN') {
+      return res.status(HttpStatus.FORBIDDEN).send({
+        message: 'You can not view all users',
+      });
+    }
+
     const users = await this.userEntity.find();
 
     return res.status(200).send({
@@ -54,55 +66,80 @@ export class UsersService {
     });
   }
 
-  async findOne(res: Response, id: string): Promise<any> {
-    const user = await this.userEntity.findOne({ where: { id } });
+  async findOne(req: Request, res: Response): Promise<any> {
+    const { user }: any = req;
+    const { userId }: any = user;
 
-    if (!user)
+    const userProfile = await this.userEntity.findOne({
+      where: { id: userId },
+      select: {
+        id: true,
+        email: true,
+        fullname: true,
+        role: true,
+        created_at: true,
+        updated_at: true,
+        password: false,
+      },
+    });
+
+    if (!userProfile)
       return res.status(HttpStatus.NOT_FOUND).send({
         message: 'User not found',
       });
 
     return res.status(200).send({
       message: 'User with given ID',
-      user,
+      user: userProfile,
     });
   }
 
   async update(
+    req: Request,
     res: Response,
-    id: string,
     updateUserDto: UpdateUserDto,
   ): Promise<any> {
+    const { user }: any = req;
+    const { userId }: any = user;
+    const currentUser = await this.userEntity.findOne({
+      where: { id: userId },
+    });
+
+    if (!currentUser)
+      return res.status(HttpStatus.NOT_FOUND).send({
+        message: 'User not found',
+      });
+
     const { password, fullname } = updateUserDto;
-    let user: any;
 
     if (password) {
       const hashedPassword = await hash(password, 12);
-      user = await this.userEntity.update(
-        { id },
+      await this.userEntity.update(
+        { id: userId },
         { password: hashedPassword, fullname },
       );
     } else {
-      user = await this.userEntity.update({ id }, { fullname });
+      await this.userEntity.update({ id: userId }, { fullname });
     }
 
-    if (!user)
-      return res.status(HttpStatus.NOT_FOUND).send({
-        message: 'User not found',
-      });
-
     return res.status(200).send({
-      message: 'User info updated',
+      message: 'User profile updated',
     });
   }
 
-  async remove(res: Response, id: string): Promise<any> {
-    const user = await this.userEntity.delete({ id });
+  async remove(req: Request, res: Response): Promise<any> {
+    const { user }: any = req;
+    const { userId }: any = user;
+    const currentUser = await this.userEntity.findOne({
+      where: { id: userId },
+    });
 
-    if (!user)
+    if (!currentUser)
       return res.status(HttpStatus.NOT_FOUND).send({
         message: 'User not found',
       });
+
+    await this.userEntity.delete({ id: userId });
 
     return res.status(200).send({
       message: 'User Deleted',

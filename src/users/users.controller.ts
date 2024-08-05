@@ -8,6 +8,7 @@ import {
   Delete,
   Res,
   UseGuards,
+  Req,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -36,8 +37,8 @@ export class UsersController {
     required: true,
   })
   @Get()
-  findAll(@Res() res: Response) {
-    return this.usersService.findAll(res);
+  findAll(@Req() req: Request, @Res() res: Response) {
+    return this.usersService.findAll(req, res);
   }
 
   @ApiSecurity('JWT_AUTH')
@@ -48,9 +49,9 @@ export class UsersController {
     required: true,
   })
   @UseGuards(AuthGuard)
-  @Get(':id')
-  findOne(@Res() res: Response, @Param('id') id: string) {
-    return this.usersService.findOne(res, id);
+  @Get('profile')
+  findOne(@Req() req: Request, @Res() res: Response) {
+    return this.usersService.findOne(req, res);
   }
 
   @ApiSecurity('JWT_AUTH')
@@ -61,19 +62,19 @@ export class UsersController {
     required: true,
   })
   @UseGuards(AuthGuard)
-  @Patch(':id')
+  @Patch('update-profile')
   update(
+    @Req() req: Request,
     @Res() res: Response,
-    @Param('id') id: string,
     @Body() updateUserDto: UpdateUserDto,
   ) {
-    return this.usersService.update(res, id, updateUserDto);
+    return this.usersService.update(req, res, updateUserDto);
   }
 
   @ApiSecurity('JWT_AUTH')
   @UseGuards(AuthGuard)
-  @Delete(':id')
-  remove(@Res() res: Response, @Param('id') id: string) {
-    return this.usersService.remove(res, id);
+  @Delete('delete-profile')
+  remove(@Req() req: Request, @Res() res: Response) {
+    return this.usersService.remove(req, res);
   }
 }

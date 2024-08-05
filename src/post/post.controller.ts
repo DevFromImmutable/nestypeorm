@@ -65,17 +65,18 @@ export class PostController {
   @Patch(':id')
   @ApiOkResponse({ description: 'Your Post Updated' })
   update(
+    @Req() req: Request,
     @Res() res: Response,
     @Param('id') id: string,
     @Body() updatePostDto: UpdatePostDto,
   ) {
-    return this.postService.update(res, id, updatePostDto);
+    return this.postService.update(req, res, id, updatePostDto);
   }
 
   @UseGuards(AuthGuard)
   @Delete(':id')
   @ApiOkResponse({ description: 'Your Post deleted' })
-  remove(@Res() res: Response, @Param('id') id: string) {
-    return this.postService.remove(res, id);
+  remove(@Req() req: Request, @Res() res: Response, @Param('id') id: string) {
+    return this.postService.remove(req, res, id);
   }
 }
