@@ -10,6 +10,7 @@ import { ApolloDriver, ApolloDriverConfig } from '@nestjs/apollo';
 import { join } from 'path';
 import { AppResolver } from './app.resolver';
 import { BookModule } from './book/book.module';
+import { SongModule } from './song/song.module';
 
 @Module({
   imports: [
@@ -28,6 +29,7 @@ import { BookModule } from './book/book.module';
     PostModule,
     AuthModule,
     BookModule,
+    SongModule,
   ],
   providers: [AppResolver],
 })

@@ -26,7 +26,7 @@ export class UsersService {
 
     if (user)
       return res
-        .status(HttpStatus.BAD_REQUEST)
+        .status(HttpStatus.CONFLICT)
         .send({ message: 'User already exists' });
 
     const hashedPassword = await hash(password, 12);
